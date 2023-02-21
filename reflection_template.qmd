@@ -11,7 +11,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an A.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from a Lab or Challenge assignment where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -21,78 +21,182 @@ execute:
 
 -   `csv`
 
-```{r wd-1-csv}
+Lab 4 Question 0
 
+```{r wd-1-csv}
+avocados <- read_csv(here("Labs", "Lab 4", "avocado.csv"))
 ```
 
 -   `xlsx`
 
-```{r wd-1-xlsx}
+Practice Activity 4
 
+```{r wd-1-xlsx}
+military <- read_xlsx(here::here("data", 
+                                 "gov_spending_per_capita.xlsx"), 
+                      sheet = "Share of Govt. spending", 
+                      skip = 7, 
+                      n_max = 190)
 ```
 
 -   `txt`
 
-```{r wd-1-txt}
+Practice Activity 5.2
 
+```{r wd-1-txt}
+message <- read_csv(here::here("Practice Activities", 
+                               "PA 5.2",
+                               "scrambled_message.txt")
+                      )
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
 
-```{r wd-2}
+Lab 3 Question 9
 
+```{r wd-2}
+hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+  select(sex, age, ethnic) |>
+  summary() 
 ```
 
 **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   numeric
 
-```{r wd-3-numeric}
+Lab 3 Question 11
 
+```{r wd-3-numeric}
+under_twenty <- hiphop_clean |>
+  filter(age < 20) |>
+  mutate(
+    familiarity = as.numeric(familiarity)
+    ) |>
+  group_by(word) |>
+  summarize(mean_fam =
+    mean(familiarity))
+    
+under_twenty |>
+  slice_max(mean_fam)
+
+under_twenty |>
+ slice_min(mean_fam)
 ```
 
 -   character -- specifically a string
 
-```{r wd-3-string}
+Practice Activity 5.2
 
+```{r wd-3-string}
+word <- str_remove(word, pattern = "ugh*[:punct:]")
 ```
 
 -   factor
 
-```{r wd-3-factor}
+Lab 3 Question 12
 
+```{r wd-3-factor}
+non_white_women <- hiphop_clean |>
+  filter(ethnic == "non-white" & 
+           sex == "Female"
+          ) |>
+  mutate(
+    familiarity = as.numeric(familiarity)
+    ) |>
+  group_by(word) |>
+  summarize(mean_fam =
+    mean(familiarity))
+
+non_white_women |>
+ slice_max(mean_fam)
+
+non_white_women |>
+ slice_min(mean_fam)
 ```
 
 -   date
 
-```{r wd-3-date}
+Practice Activity 5.1 Question 4
 
+```{r wd-3-date}
+suspects <- suspects |>
+  filter(pm(Iceland) == TRUE,
+         day(Time.Spotted) %in% c(22, 23, 24))
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   numeric
 
-```{r wd-4-numeric}
+Lab 4 Question 7
 
+```{r wd-4-numeric}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
+
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   character -- specifically a string
 
-```{r wd-4-string}
+Practice Activity 5.2
 
+```{r wd-4-string}
+mess <- str_flatten(word, collapse = " ")
 ```
 
 -   factor
 
-```{r wd-4-factor}
+Lab 3 Question 7
 
+```{r wd-4-factor}
+hiphop_clean <- hiphop_clean |>
+  mutate(ethnic = 
+    case_when(ethnic == "white"~"white",
+            TRUE ~ "non-white"),
+    ethnic = as.factor(ethnic)
+  )
 ```
 
 -   date
 
-```{r wd-4-date}
+Practice Activity 5.1 Question 6
 
+```{r wd-4-date}
+suspects <- suspects |>
+  mutate(time = difftime(Time.Spotted, init, units = "mins"),
+         time = as.integer(time)) |>
+  filter(time %% 10 == 0)
 ```
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
@@ -105,47 +209,155 @@ execute:
 
 -   `right_join()`
 
-```{r wd-5-right}
+Preview Activity 11 Part A
 
+```{r wd-5-right}
+right_join(prof_info, prof_course)
 ```
 
 -   `inner_join()`
 
-```{r wd-5-inner}
+Preview Activity 11 Part A
 
+```{r wd-5-inner}
+#changed for the portfolio
+inner_join(prof_info, prof_course)
 ```
 
 -   `full_join()`
 
-```{r wd-5-full}
+Challenge 4
 
+```{r wd-5-full}
+new_avocados <- 
+  full_join(avocados_avg, housing, by = c("region", "year")) 
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
 
 -   `semi_join()`
 
+Lab 4 Question 6
+
 ```{r wd-6-semi}
+#changed plot code for portfolio
+ca_cities <- tibble(region = c("LosAngeles", 
+                               "Sacramento", 
+                               "SanDiego", 
+                               "SanFrancisco"
+  ))
+
+ca_avocados <- 
+  semi_join(avocados_clean, ca_cities, by = "region") |>
+  group_by(region, type) |>
+  summarize(
+    price = mean(AveragePrice)
+  ) |>
+  pivot_wider(names_from = type, 
+              values_from = price) |>
+  mutate(
+    difference = organic - conventional
+  ) 
+
+ca_avocados
+
+ggplot(data = ca_avocados, mapping = aes(x = difference, y = region)) +
+  geom_segment(aes(xend = 0, yend = region)) +
+  geom_point(color = "forestgreen") +
+  labs(x = "Region", 
+       y = "Difference in Price between Organic vs. Conventional Avocados ($)", 
+       title = "Difference in Price between Organic vs. Conventional Avocados by Region")
 
 ```
 
 -   `anti_join()`
 
-```{r wd-6-anti}
+Lab 4 Question 2
 
+```{r wd-6-anti}
+avocados_clean <- 
+  anti_join(avocados, regions_major, by = "region") |>
+  anti_join(regions_minor, by = "region") |>
+  rename("Small" = "4046", 
+         "Large" = "4225", 
+         "XLarge" = "4770", 
+         "TotalVolume" = "Total Volume") 
 ```
 
 **WD-7: I can pivot dataframes from long to wide and visa versa**
 
 -   `pivot_longer()`
 
-```{r wd-7-long}
+Lab 4 Question 7
 
+```{r wd-7-long}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
+
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   `pivot_wider()`
 
+Lab 4 Question 6
+
 ```{r wd-7-wide}
+#Changed plot code for portfolio
+ca_cities <- tibble(region = c("LosAngeles", 
+                               "Sacramento", 
+                               "SanDiego", 
+                               "SanFrancisco"
+  ))
+
+ca_avocados <- 
+  semi_join(avocados_clean, ca_cities, by = "region") |>
+  group_by(region, type) |>
+  summarize(
+    price = mean(AveragePrice)
+  ) |>
+  pivot_wider(names_from = type, 
+              values_from = price) |>
+  mutate(
+    difference = organic - conventional
+  ) 
+
+ca_avocados
+
+ggplot(data = ca_avocados, mapping = aes(x = difference, y = region)) +
+  geom_segment(aes(xend = 0, yend = region)) +
+  geom_point(color = "forestgreen") +
+  labs(x = "Region", 
+       y = "Difference in Price between Organic vs. Conventional Avocados ($)", 
+       title = "Difference in Price between Organic vs. Conventional Avocados by Region")
 
 ```
 
@@ -157,10 +369,18 @@ I've done this in the following provided assignments:
 
 **R-2: I can write well documented and tidy code.**
 
--   Example 1
+-   Example 1: Lab 3 Question 14
 
 ```{r r-2-1}
-
+#Code was changed for Portfolio
+hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+  filter(between(age, 17, 23),
+         between(city, 10000, 60000),
+         sex == "Male",
+         ethnic == "white") |>  
+         slice_max(bieber) |> 
+  select(subj)
 ```
 
 -   Example 2
@@ -171,16 +391,37 @@ I've done this in the following provided assignments:
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
 
--   Example 1
+-   Example 1: Lab 3 Question 11
 
 ```{r r-3-1}
+under_twenty <- hiphop_clean |>
+  filter(age < 20) |>
+  mutate(
+    familiarity = as.numeric(familiarity)
+    ) |>
+  group_by(word) |>
+  summarize(mean_fam =
+    mean(familiarity))
+    
+under_twenty |>
+  slice_max(mean_fam)
 
+under_twenty |>
+ slice_min(mean_fam)
 ```
 
--   Example 2
+-   Example 2: Lab 3 Question 14
 
 ```{r r-3-2}
-
+#Code was changed for Portfolio
+hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+  filter(between(age, 17, 23),
+         between(city, 10000, 60000),
+         sex == "Male",
+         ethnic == "white") |>  
+         slice_max(bieber) |> 
+  select(subj)
 ```
 
 ## Data Visualization & Summarization
@@ -189,87 +430,277 @@ I've done this in the following provided assignments:
 
 -   numeric variables
 
-```{r dvs-1-num}
+Challenge 1
 
+```{r dvs-1-num}
+dist <- cars[, 2]
+hist(dist, main = "Histogram of Stopping Distance", xlab = "Stopping Distance")
+speed <- cars[,1]
+plot(speed, dist, main = "Stopping Distance v Time", xlab = "Speed", ylab = "Stopping Distance")
 ```
 
 -   numeric variables and categorical variables
 
-```{r dvs-2-num-cat}
+Lab 5 Question 1
 
+```{r dvs-2-num-cat}
+ ggplot(data = surveys, mapping = aes(weight, fct_reorder(species, weight))) +
+    geom_jitter(color = "orange", alpha = .1) +
+    geom_boxplot(outlier.shape = NA) + 
+    labs(x= "Weight (g)", y = "", title = "Species of Rodent by Weight (g)")
 ```
 
 -   categorical variables
 
-```{r dvs-2-cat}
+Lab 4 Question 7
 
+```{r dvs-2-cat}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
+
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   dates
 
-```{r dvs-2-date}
+Lab 5 Question 2
 
+```{r dvs-2-date}
+ggplot(data = surveys, mapping = aes(x = fct_relevel(
+                                         day_of_week, 
+                                         c("Mon", "Tue", 
+                                           "Wed", "Thu", "Fri", 
+                                           "Sat", "Sun")))) +
+  geom_bar(fill = "darkslategray4") +
+  labs(x = "Day of the Week", y = "Number of Rodents", 
+       title = "Number of Rodents Captured by Day of the Week")
 ```
 
 **DVS-2: I use plot modifications to make my visualization clear to the reader.**
 
--   Example 1
+-   Example 1: Lab 4 Question 7
 
 ```{r dvs-2-1}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
 
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
--   Example 2
+-   Example 2: Lab 5 Question 4
 
 ```{r dvs-2-2}
-
+ggplot(data = mean_plot, 
+       mapping = aes(x = year, 
+                     y = mean_weight, 
+                     color = fct_reorder2(genus, 
+                                          year, 
+                                          mean_weight))) +
+    geom_line(stat = "identity") +
+    labs(x= "Year", y = "", title = "Mean Weight of Rodent Genus by Year", color = "Genus")
 ```
 
 **DVS-3: I show creativity in my visualizations**
 
--   Example 1
+-   Example 1: Lab 5 Question 1
 
 ```{r dvs-3-1}
+ ggplot(data = surveys, mapping = aes(weight, fct_reorder(species, weight))) +
+    geom_jitter(color = "orange", alpha = .1) +
+    geom_boxplot(outlier.shape = NA) + 
+    labs(x= "Weight (g)", y = "", title = "Species of Rodent by Weight (g)")
 
 ```
 
--   Example 2
+-   Example 2: Lab 4 Question 7
 
 ```{r dvs-3-2}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
 
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
 
--   Example 1
+-   Example 1: Lab 4 Question 7
 
 ```{r dvs-4-1}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
 
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
--   Example 2
+-   Example 2: Lab 3 Question 11
 
 ```{r dvs-4-2}
+under_twenty <- hiphop_clean |>
+  filter(age < 20) |>
+  mutate(
+    familiarity = as.numeric(familiarity)
+    ) |>
+  group_by(word) |>
+  summarize(mean_fam =
+    mean(familiarity))
+    
+under_twenty |>
+  slice_max(mean_fam)
 
+under_twenty |>
+ slice_min(mean_fam)
 ```
 
 **DVS-5: I can find summaries of variables across multiple groups.**
 
--   Example 1
+-   Example 1: Lab 3 Question 9
 
 ```{r dvs-5-1}
-
+hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+  select(sex, age, ethnic) |>
+    summary() 
 ```
 
--   Example 2
+-   Example 2: Challenge 3
 
 ```{r dvs-5-2}
+male_female <- new_hiphop |>
+  group_by(sex) |> 
+  summarize(
+      across(.cols = intl:unclassifiable, 
+              .fns = mean, na.rm = TRUE
+    ))
 
+male_female <- male_female |>
+  summarize(
+      across(.cols = intl:unclassifiable, 
+              .fns = diff, na.rm = TRUE
+    ))
+  
+male_female |>
+  which.max()
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
 
--   Example 1
+-   Example 1:
 
 ```{r dvs-6-1}
 
@@ -299,16 +730,67 @@ I've done this in the following provided assignments:
 
 **PE-1: I can write concise code which does not repeat itself.**
 
--   using a single function call
+-   using a single function call: Lab 4 Question 2
 
 ```{r pe-1-one-call}
+#tibble of major regions
+regions_major <- tibble(region = c("West",
+                             "GreatLakes",
+                             "Midsouth",
+                             "Northeast",
+                             "Southeast",
+                             "SouthCentral",
+                             "WestTexNewMexico",
+                             "Plains"
+                             ))
+
+#tibble of minor regions
+regions_minor <- tibble(region = c("California",
+                                   "NorthernNewEngland",
+                                   "NewYork",
+                                   "SouthCarolina",
+                                   "TotalUS"
+                          ))
+
+
+#clean the data set
+avocados_clean <- 
+  anti_join(avocados, regions_major, by = "region") |>
+  anti_join(regions_minor, by = "region") |>
+  rename("Small" = "4046", 
+         "Large" = "4225", 
+         "XLarge" = "4770", 
+         "TotalVolume" = "Total Volume") 
+
+#data set including only the major regions
+avocados_major <- 
+  semi_join(avocados, regions_major, by = "region") |>
+  rename("Small" = "4046", 
+         "Large" = "4225", 
+         "XLarge" = "4770") 
 
 ```
 
 -   `across()`
 
-```{r pe-1-across}
+Challenge 3
 
+```{r pe-1-across}
+white_nonwhite <- new_hiphop |>
+  group_by(ethnic) |> 
+  summarize(
+      across(.cols = intl:unclassifiable, 
+              .fns = mean, na.rm = TRUE
+    ))
+
+white_nonwhite <- white_nonwhite |>
+  summarize(
+    abs(
+     across(.cols = intl:unclassifiable, 
+              .fns = diff, na.rm = TRUE
+    )))
+white_nonwhite |>
+ which.max()
 ```
 
 -   `map()` functions
@@ -335,8 +817,24 @@ I've done this in the following provided assignments:
 
 -   `across()`
 
-```{r pe-3-across}
+Challenge 3
 
+```{r pe-3-across}
+white_nonwhite <- new_hiphop |>
+  group_by(ethnic) |> 
+  summarize(
+      across(.cols = intl:unclassifiable, 
+              .fns = mean, na.rm = TRUE
+    ))
+
+white_nonwhite <- white_nonwhite |>
+  summarize(
+    abs(
+     across(.cols = intl:unclassifiable, 
+              .fns = diff, na.rm = TRUE
+    )))
+white_nonwhite |>
+ which.max()
 ```
 
 -   `map()` functions (Provide 2 Examples)
@@ -351,16 +849,55 @@ I've done this in the following provided assignments:
 
 **PE-4: I can use modern tools when carrying out my analysis.**
 
--   Example 1
+-   Example 1: Lab 4 Question 7
 
 ```{r pe-4-1}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
 
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
--   Example 2
+-   Example 2: Lab 3 Question 14
 
 ```{r pe-4-2}
-
+hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+  filter(between(age, 17, 23),
+         between(city, 10000, 60000),
+         sex == "Male",
+         ethnic == "white") |>  
+         slice_max(bieber) |> 
+  select(subj)
 ```
 
 ## Data Simulation & Modeling
@@ -397,10 +934,20 @@ I've done this in the following provided assignments:
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
+Throughout the course, I have revised every single one of my lab assignments, and from those revisions, I have learned a lot more about programming. In each revision, I have taken into account all of the feedback I have received from both Dr. T and my peer grader. I apply all of those revisions to my lab as well as any formatting errors that I think need to be updated. For example, one of the lab assignments that has demonstrated my knowledge of the learning targets was Lab 4. In Lab 4, one of the main revisions I made was changing my plot in Question 6. I originally had created a bar plot to represent the data, but later realized that bar plots are better for representing categorical data. Since this data was numerical, I changed it to Cleveland dot-plot. It took some trial and error, but I eventually figured out how to plot both the segment and the point. A Cleveland dot plot is more visually appealing and better represents the dataset. Another lab where I continued to revise my thinking was in Lab 3. Initially, I was slightly confused on when it was appropriate to use the distinct() function versus the group_by() function. In Lab 3 Question 14, I demonstrated my understanding of this topic by switching it to distinct() from group_by(). I also learned a new method of how to write more efficient code through using the between() function. The between function allowed me to filter certain aspects of the code rather than using & or a comma. Although there were some aspects of certain labs that I received a growing on, I feel like I have understood the previous learning targets. I have also received a complete on all of the challenges, demonstrating my knowledge and understanding of the learning targets through those assignments. Especially now that some aspects, such as plotting a boxplot, have been repeated throughout the labs, I feel like I fully understand those learning targets. I have also attended office hours a couple times in order to completely understand where I went wrong.
+
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
+One of the labs where I went specifically above and beyond, was Lab 4. Through that lab, I was able to learn about different attributes that could be added to different ggplots, such as labeling the legend and specifying different colors. One of the questions in particular, Question 7, I demonstrated extending my thinking. In order to design the correct plot, I had to figure out how to change the order of the levels on the legend. I researched and tested different methods of doing this to see which ones worked best, or didn't work at all. The method that I ended up using was turning the fill argument into a factor and manually relabeling the order. I was also unsure of how I was able to assign different colors to the legend. Through the research I conducted, I found a source that explained the use of scale_fill_manual(). I was able to figure out how to assign the different colors through this method. Additionally, for Lab 4 Question 5, I was unsure how to use change my plot axis to not use scientific notation, as it is not appealing for the reader. After researching, I found an option of doing scipen = 999 that would transform it out of scientific notation. Before Lab 4, I wasn't sure what was expected of me through the extending my thinking portion, but now I know to provide external resources when completing the activities. In challenge 4, I was also able to extend my thinking by creating a data set of housing prices and finding values that adhere to it. I researched different housing prices based on the area and created a dataset. I also was able to extend my thinking through playing around with different plot styles and colors when doing the practice activities. Now, in almost all of my lab and challenge activities, I have included various plot colors to make them more visually appealing.
+
 ## Peer Support & Collaboration
 
 <!-- Include an image of feedback you gave that you are proud of (either in a peer review or in Discord) -->
+
+Throughout the semester, I have collaborated significantly with my classmates inside of class and outside of class. Each week during class, I work collaboratively with my teammates by asking them clarifying questions and advising them on what steps to take. Outside of class, I answer my group mates questions in our group chat and provide them with external resources that may be helpful in understanding the problem they face. I also try to respond to questions in the discord to the best of my ability, however I sometimes don't know the answer. As of now, I have responded to one discord question and am looking forward to helping my classmates in the future. I also work collaboratively with other classmates in the library to help bounce ideas off of each other and discuss possible errors that may arise. I explain to them how to use certain functions and provide with ideas on how they can possibly make their code tidy and more efficient. I have also completed all of the assigned peer review and provided my classmates with helpful feedback to revise their code. I make sure to look carefully at each assignment submitted in order to catch any possible errors as well as make sure I provide them with constructive feedback. I also offer possible solutions of other functions they may be able to use in replacement of superseded or inefficient code. I feel as though I have grown as a leader within my group, especially when I am the reporter. When I was the reporter, I often wasn't exactly sure what to write for the code, but my teammates were able to walk me through the correct format. I ask questions to clarify and I offer explanations of what the code is doing in order to better understand it. I provide my team with possible answers and ideas to further promote everyone's understanding of the code and to help figure out the solution. In these ways, I felt that I have grown as a leader through promoting discussion within the team to help me and others better understand what the code was doing.
+
+![](images/image-1903591390.png)
+
+![](images/image-1394750024.png)
