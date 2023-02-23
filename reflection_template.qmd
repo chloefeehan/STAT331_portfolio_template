@@ -76,12 +76,6 @@ under_twenty <- hiphop_clean |>
   group_by(word) |>
   summarize(mean_fam =
     mean(familiarity))
-    
-under_twenty |>
-  slice_max(mean_fam)
-
-under_twenty |>
- slice_min(mean_fam)
 ```
 
 -   character -- specifically a string
@@ -107,12 +101,6 @@ non_white_women <- hiphop_clean |>
   group_by(word) |>
   summarize(mean_fam =
     mean(familiarity))
-
-non_white_women |>
- slice_max(mean_fam)
-
-non_white_women |>
- slice_min(mean_fam)
 ```
 
 -   date
@@ -132,11 +120,6 @@ suspects <- suspects |>
 Lab 4 Question 7
 
 ```{r wd-4-numeric}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
 ca_plot <-
   semi_join(avocados_clean, california_regions,
            by = "region") |>
@@ -153,18 +136,6 @@ ca_plot <-
     mutate(
       proportion = (avg_size/total)
   ) 
-
-ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
-                                     fill = factor(avo_size, 
-                                                   levels = c("Small", "Large", "XLarge")))) +
-  facet_wrap(~type) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
-  ) +
-  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
-        title = "Proportion of Avocados by Size and California City",
-        fill = "Avocado Size") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   character -- specifically a string
@@ -240,13 +211,6 @@ new_avocados <-
 Lab 4 Question 6
 
 ```{r wd-6-semi}
-#changed plot code for portfolio
-ca_cities <- tibble(region = c("LosAngeles", 
-                               "Sacramento", 
-                               "SanDiego", 
-                               "SanFrancisco"
-  ))
-
 ca_avocados <- 
   semi_join(avocados_clean, ca_cities, by = "region") |>
   group_by(region, type) |>
@@ -258,15 +222,6 @@ ca_avocados <-
   mutate(
     difference = organic - conventional
   ) 
-
-ca_avocados
-
-ggplot(data = ca_avocados, mapping = aes(x = difference, y = region)) +
-  geom_segment(aes(xend = 0, yend = region)) +
-  geom_point(color = "forestgreen") +
-  labs(x = "Region", 
-       y = "Difference in Price between Organic vs. Conventional Avocados ($)", 
-       title = "Difference in Price between Organic vs. Conventional Avocados by Region")
 
 ```
 
@@ -291,11 +246,6 @@ avocados_clean <-
 Lab 4 Question 7
 
 ```{r wd-7-long}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
 ca_plot <-
   semi_join(avocados_clean, california_regions,
            by = "region") |>
@@ -312,18 +262,6 @@ ca_plot <-
     mutate(
       proportion = (avg_size/total)
   ) 
-
-ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
-                                     fill = factor(avo_size, 
-                                                   levels = c("Small", "Large", "XLarge")))) +
-  facet_wrap(~type) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
-  ) +
-  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
-        title = "Proportion of Avocados by Size and California City",
-        fill = "Avocado Size") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   `pivot_wider()`
@@ -331,13 +269,6 @@ ggplot(data = ca_plot, mapping = aes(x = region, y = proportion,
 Lab 4 Question 6
 
 ```{r wd-7-wide}
-#Changed plot code for portfolio
-ca_cities <- tibble(region = c("LosAngeles", 
-                               "Sacramento", 
-                               "SanDiego", 
-                               "SanFrancisco"
-  ))
-
 ca_avocados <- 
   semi_join(avocados_clean, ca_cities, by = "region") |>
   group_by(region, type) |>
@@ -349,15 +280,6 @@ ca_avocados <-
   mutate(
     difference = organic - conventional
   ) 
-
-ca_avocados
-
-ggplot(data = ca_avocados, mapping = aes(x = difference, y = region)) +
-  geom_segment(aes(xend = 0, yend = region)) +
-  geom_point(color = "forestgreen") +
-  labs(x = "Region", 
-       y = "Difference in Price between Organic vs. Conventional Avocados ($)", 
-       title = "Difference in Price between Organic vs. Conventional Avocados by Region")
 
 ```
 
@@ -402,12 +324,6 @@ under_twenty <- hiphop_clean |>
   group_by(word) |>
   summarize(mean_fam =
     mean(familiarity))
-    
-under_twenty |>
-  slice_max(mean_fam)
-
-under_twenty |>
- slice_min(mean_fam)
 ```
 
 -   Example 2: Lab 3 Question 14
@@ -455,28 +371,6 @@ Lab 5 Question 1
 Lab 4 Question 7
 
 ```{r dvs-2-cat}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
-ca_plot <-
-  semi_join(avocados_clean, california_regions,
-           by = "region") |>
-  pivot_longer("Small":"XLarge", 
-               names_to = "avo_size", 
-               values_to = "volume") |>
-  group_by(region, avo_size, type) |>
-   summarize(
-     avg_size = mean(volume))|>
-  group_by(region, type) |>
-  mutate(
-    total = sum(avg_size)
-  ) |>
-    mutate(
-      proportion = (avg_size/total)
-  ) 
-
 ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
                                      fill = factor(avo_size, 
                                                    levels = c("Small", "Large", "XLarge")))) +
@@ -510,28 +404,6 @@ ggplot(data = surveys, mapping = aes(x = fct_relevel(
 -   Example 1: Lab 4 Question 7
 
 ```{r dvs-2-1}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
-ca_plot <-
-  semi_join(avocados_clean, california_regions,
-           by = "region") |>
-  pivot_longer("Small":"XLarge", 
-               names_to = "avo_size", 
-               values_to = "volume") |>
-  group_by(region, avo_size, type) |>
-   summarize(
-     avg_size = mean(volume))|>
-  group_by(region, type) |>
-  mutate(
-    total = sum(avg_size)
-  ) |>
-    mutate(
-      proportion = (avg_size/total)
-  ) 
-
 ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
                                      fill = factor(avo_size, 
                                                    levels = c("Small", "Large", "XLarge")))) +
@@ -573,28 +445,6 @@ ggplot(data = mean_plot,
 -   Example 2: Lab 4 Question 7
 
 ```{r dvs-3-2}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
-ca_plot <-
-  semi_join(avocados_clean, california_regions,
-           by = "region") |>
-  pivot_longer("Small":"XLarge", 
-               names_to = "avo_size", 
-               values_to = "volume") |>
-  group_by(region, avo_size, type) |>
-   summarize(
-     avg_size = mean(volume))|>
-  group_by(region, type) |>
-  mutate(
-    total = sum(avg_size)
-  ) |>
-    mutate(
-      proportion = (avg_size/total)
-  ) 
-
 ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
                                      fill = factor(avo_size, 
                                                    levels = c("Small", "Large", "XLarge")))) +
@@ -613,11 +463,6 @@ ggplot(data = ca_plot, mapping = aes(x = region, y = proportion,
 -   Example 1: Lab 4 Question 7
 
 ```{r dvs-4-1}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
 ca_plot <-
   semi_join(avocados_clean, california_regions,
            by = "region") |>
@@ -634,18 +479,6 @@ ca_plot <-
     mutate(
       proportion = (avg_size/total)
   ) 
-
-ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
-                                     fill = factor(avo_size, 
-                                                   levels = c("Small", "Large", "XLarge")))) +
-  facet_wrap(~type) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
-  ) +
-  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
-        title = "Proportion of Avocados by Size and California City",
-        fill = "Avocado Size") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
 -   Example 2: Lab 3 Question 11
@@ -659,12 +492,6 @@ under_twenty <- hiphop_clean |>
   group_by(word) |>
   summarize(mean_fam =
     mean(familiarity))
-    
-under_twenty |>
-  slice_max(mean_fam)
-
-under_twenty |>
- slice_min(mean_fam)
 ```
 
 **DVS-5: I can find summaries of variables across multiple groups.**
@@ -687,15 +514,6 @@ male_female <- new_hiphop |>
       across(.cols = intl:unclassifiable, 
               .fns = mean, na.rm = TRUE
     ))
-
-male_female <- male_female |>
-  summarize(
-      across(.cols = intl:unclassifiable, 
-              .fns = diff, na.rm = TRUE
-    ))
-  
-male_female |>
-  which.max()
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
@@ -733,27 +551,6 @@ male_female |>
 -   using a single function call: Lab 4 Question 2
 
 ```{r pe-1-one-call}
-#tibble of major regions
-regions_major <- tibble(region = c("West",
-                             "GreatLakes",
-                             "Midsouth",
-                             "Northeast",
-                             "Southeast",
-                             "SouthCentral",
-                             "WestTexNewMexico",
-                             "Plains"
-                             ))
-
-#tibble of minor regions
-regions_minor <- tibble(region = c("California",
-                                   "NorthernNewEngland",
-                                   "NewYork",
-                                   "SouthCarolina",
-                                   "TotalUS"
-                          ))
-
-
-#clean the data set
 avocados_clean <- 
   anti_join(avocados, regions_major, by = "region") |>
   anti_join(regions_minor, by = "region") |>
@@ -761,13 +558,6 @@ avocados_clean <-
          "Large" = "4225", 
          "XLarge" = "4770", 
          "TotalVolume" = "Total Volume") 
-
-#data set including only the major regions
-avocados_major <- 
-  semi_join(avocados, regions_major, by = "region") |>
-  rename("Small" = "4046", 
-         "Large" = "4225", 
-         "XLarge" = "4770") 
 
 ```
 
@@ -782,15 +572,6 @@ white_nonwhite <- new_hiphop |>
       across(.cols = intl:unclassifiable, 
               .fns = mean, na.rm = TRUE
     ))
-
-white_nonwhite <- white_nonwhite |>
-  summarize(
-    abs(
-     across(.cols = intl:unclassifiable, 
-              .fns = diff, na.rm = TRUE
-    )))
-white_nonwhite |>
- which.max()
 ```
 
 -   `map()` functions
@@ -826,15 +607,6 @@ white_nonwhite <- new_hiphop |>
       across(.cols = intl:unclassifiable, 
               .fns = mean, na.rm = TRUE
     ))
-
-white_nonwhite <- white_nonwhite |>
-  summarize(
-    abs(
-     across(.cols = intl:unclassifiable, 
-              .fns = diff, na.rm = TRUE
-    )))
-white_nonwhite |>
- which.max()
 ```
 
 -   `map()` functions (Provide 2 Examples)
@@ -852,11 +624,6 @@ white_nonwhite |>
 -   Example 1: Lab 4 Question 7
 
 ```{r pe-4-1}
-california_regions <- tibble(region = c("LosAngeles", 
-                                      "Sacramento", 
-                                      "SanDiego", 
-                                      "SanFrancisco"))
-
 ca_plot <-
   semi_join(avocados_clean, california_regions,
            by = "region") |>
@@ -872,24 +639,13 @@ ca_plot <-
   ) |>
     mutate(
       proportion = (avg_size/total)
-  ) 
-
-ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
-                                     fill = factor(avo_size, 
-                                                   levels = c("Small", "Large", "XLarge")))) +
-  facet_wrap(~type) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
-  ) +
-  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
-        title = "Proportion of Avocados by Size and California City",
-        fill = "Avocado Size") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+  )
 ```
 
 -   Example 2: Lab 3 Question 14
 
 ```{r pe-4-2}
+#code changed for portfolio
 hiphop_clean |>
   distinct(subj, .keep_all = TRUE) |>
   filter(between(age, 17, 23),
