@@ -80,10 +80,21 @@ under_twenty <- hiphop_clean |>
 
 -   character -- specifically a string
 
-Practice Activity 5.2
+Lab 8 Question 1 (pluralize function)
 
 ```{r wd-3-string}
-word <- str_remove(word, pattern = "ugh*[:punct:]")
+pluralize_gift <- function(gift){
+
+gift <- 
+  case_when(
+    str_detect(gift, "oo") ~ str_replace(gift, "oo", "ee"),
+    str_detect(gift, "y$") ~ str_replace(gift, "y$", "ies"),
+    TRUE ~ str_c(gift, "s", sep = "")
+  )
+
+return(gift)
+
+}
 ```
 
 -   factor
@@ -174,13 +185,20 @@ suspects <- suspects |>
 
 -   `left_join()`
 
-```{r wd-5-left}
+Preview Activity 4.3 Part C
 
+```{r wd-5-left}
+#changed for the portfolio
+prof_course |>
+  pivot_longer(cols = c(Stat_331, Stat_330, Stat_431),
+               names_to = "course",
+               values_to = "can_teach") |>
+  full_join(course_info)
 ```
 
 -   `right_join()`
 
-Preview Activity 11 Part A
+Preview Activity 4.3 Part A
 
 ```{r wd-5-right}
 right_join(prof_info, prof_course)
@@ -188,7 +206,7 @@ right_join(prof_info, prof_course)
 
 -   `inner_join()`
 
-Preview Activity 11 Part A
+Preview Activity 4.3 Part A
 
 ```{r wd-5-inner}
 #changed for the portfolio
@@ -287,7 +305,7 @@ ca_avocados <-
 
 **R-1: I can create professional looking, reproducible analyses using RStudio projects, Quarto documents, and the here package.**
 
-I've done this in the following provided assignments:
+I've done this in the following provided assignments: Lab 3, Lab 4, Lab 5, Lab 7, Challenge 9
 
 **R-2: I can write well documented and tidy code.**
 
@@ -305,39 +323,78 @@ hiphop_clean |>
   select(subj)
 ```
 
--   Example 2
+-   Example 2: Lab 9 Question 9
 
 ```{r r-2-2}
-
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Year == 2000,
+         State %in% c("CA", "PA"),
+         Name %in% c("Allan", "Alan", "Allen"),
+         Sex == "M"
+         ) |>
+  select(Name, State, Count) |>
+  group_by(Name)|>
+  pivot_wider(names_from = Name,
+              values_from = Count)|>
+  knitr::kable(format = "html",
+               col.names =
+                 c("State", "Alan", "Allen", "Allan"),
+               caption = "Number of Male Babies Born in 2000 by Name and State"
+               )
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
 
--   Example 1: Lab 3 Question 11
+-   Example 1: Lab 7 Question 2.2
 
 ```{r r-3-1}
-under_twenty <- hiphop_clean |>
-  filter(age < 20) |>
-  mutate(
-    familiarity = as.numeric(familiarity)
-    ) |>
-  group_by(word) |>
-  summarize(mean_fam =
-    mean(familiarity))
+rescale_01 <- function(var) {
+  stopifnot(is.numeric(var),
+            length(var) > 1)
+  
+  rng = range(var, na.rm = TRUE)
+  
+  var_min = min(var, na.rm = TRUE)
+  num <- var - rng[1]
+  denom <- rng[2] - rng[1]
+  
+  num / denom
+}
 ```
 
--   Example 2: Lab 3 Question 14
+-   Example 2: Lab 8 (Phrase Function)
 
 ```{r r-3-2}
-#Code was changed for Portfolio
-hiphop_clean |>
-  distinct(subj, .keep_all = TRUE) |>
-  filter(between(age, 17, 23),
-         between(city, 10000, 60000),
-         sex == "Male",
-         ethnic == "white") |>  
-         slice_max(bieber) |> 
-  select(subj)
+make_phrase <- function(day, num_word, item, verb, adjective, location) {
+  
+  day <- str_replace_na(day, "")
+  num_word <- str_replace_na(num_word, "")
+  item <- str_replace_na(item, "")
+  verb <- str_replace_na(verb, "")
+  adjective <- str_replace_na(adjective, "")
+  location <- str_replace_na(location, "")
+  
+ item <-
+   case_when(
+    day > 1 ~ pluralize_gift(item),
+    TRUE ~ item)
+ 
+ article <-
+   case_when(
+     day == 1 & str_detect(item, "^[aeiou]") ~ "an",
+     day == 1 ~ "a",
+     TRUE ~ ""
+  )
+  
+ num_word <- case_when(day == 1 ~ "",
+                       TRUE ~ num_word
+                       
+   )
+
+  phrase <- glue("{article} {num_word} {adjective} {item} {verb} {location}")
+  return(phrase)
+}
 ```
 
 ## Data Visualization & Summarization
@@ -346,13 +403,22 @@ hiphop_clean |>
 
 -   numeric variables
 
-Challenge 1
+Lab 9 Question 3
 
 ```{r dvs-1-num}
-dist <- cars[, 2]
-hist(dist, main = "Histogram of Stopping Distance", xlab = "Stopping Distance")
-speed <- cars[,1]
-plot(speed, dist, main = "Stopping Distance v Time", xlab = "Speed", ylab = "Stopping Distance")
+allison_f |>
+  group_by(Year) |>
+  summarize(
+    Count = sum(Count)
+  ) |>
+  ggplot(mapping = (aes(x = Year, y = Count))) +
+  geom_line(color = "darkblue") +
+  scale_x_continuous(breaks = c("1997":"2014"), 
+                     guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(n.breaks = 8) +
+  labs(x = "Year", y = "Count", 
+       title = "Number of Babies Named Allison from 1997 to 2014") +
+  theme(text = element_text(family = "Optima"))
 ```
 
 -   numeric variables and categorical variables
@@ -432,30 +498,45 @@ ggplot(data = mean_plot,
 
 **DVS-3: I show creativity in my visualizations**
 
--   Example 1: Lab 5 Question 1
+-   Example 1: Lab 7 Question 2.2
 
 ```{r dvs-3-1}
- ggplot(data = surveys, mapping = aes(weight, fct_reorder(species, weight))) +
-    geom_jitter(color = "orange", alpha = .1) +
-    geom_boxplot(outlier.shape = NA) + 
-    labs(x= "Weight (g)", y = "", title = "Species of Rodent by Weight (g)")
+fish |>
+  filter(
+    is.na(weight)
+  ) |>
+  
+ggplot(mapping = aes(x = as.factor(year), fill = section)) +
+  facet_grid(~trip, labeller = label_both) +
+  geom_bar() +
+  scale_fill_manual(values = c("darkmagenta", "deepskyblue3")) +
+  labs(x = "Year", y = "Frequency", 
+       title = "Frequency of Missing Fish Weight Values by Year, Section, and Trip", 
+       fill = "Section") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme(text = element_text(family = "Optima"))
 
 ```
 
--   Example 2: Lab 4 Question 7
+-   Example 2: Lab 9 Question 8
 
 ```{r dvs-3-2}
-ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
-                                     fill = factor(avo_size, 
-                                                   levels = c("Small", "Large", "XLarge")))) +
-  facet_wrap(~type) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
-  ) +
-  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
-        title = "Proportion of Avocados by Size and California City",
-        fill = "Avocado Size") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Name %in% c("Allan", "Alan", "Allen"),
+         Sex == "M") |>
+  group_by(Name, Year) |>
+  summarize(
+    Count = sum(Count)
+  ) |>
+  ggplot(mapping = aes(x = Year, y = Count, color = Name)) +
+    geom_line() +
+    facet_wrap(~Name) +
+    scale_y_continuous(n.breaks = 8) +
+    scale_color_manual(values = c("darkslategray4", "aquamarine3", "cyan2")) +
+    labs(x = "Year", y = "Count", 
+         title = "Number of Babies Named Alan, Allan, or Allen from 1997 to 2014") +
+  theme(text = element_text(family = "Optima"))
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -518,30 +599,100 @@ male_female <- new_hiphop |>
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
 
--   Example 1:
+-   Example 1: Challenge 9 Question 9
 
 ```{r dvs-6-1}
-
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Year == 2000,
+         State %in% c("CA", "PA"),
+         Name %in% c("Allan", "Alan", "Allen"),
+         Sex == "M"
+         ) |>
+  select(Name, State, Count) |>
+  group_by(Name)|>
+  pivot_wider(names_from = Name,
+              values_from = Count)|>
+  knitr::kable(format = "html",
+               col.names =
+                 c("State", "Alan", "Allen", "Allan"),
+               caption = "Number of Male Babies Born in 2000 by Name and State"
+               ) |>
+  kableExtra::kable_classic(html_font = "Optima") |>
+  kable_styling(bootstrap_options = "striped", font_size = 14)
 ```
 
--   Example 2
+-   Example 2: Challenge 9 Question 10
 
 ```{r dvs-6-2}
-
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Year == 2000,
+         State %in% c("CA", "PA"),
+         Name %in% c("Allan", "Alan", "Allen"),
+         Sex == "M"
+         ) |>
+  group_by(Name)|>
+  mutate(
+    Percentage = Count/sum(Count)
+  ) |>
+  select(Name, State, Percentage) |>
+  pivot_wider(names_from = Name,
+              values_from = Percentage)|>
+  gt() |>
+  tab_header(title = "Percentage of Male Babies Born in 2000 by Name and State") |>
+  fmt_percent(columns = 2:4, decimals = 2) 
 ```
 
 **DVS-7: I show creativity in my tables.**
 
--   Example 1
+-   Example 1: Challenge 9 Question 9
 
 ```{r dvs-7-1}
-
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Year == 2000,
+         State %in% c("CA", "PA"),
+         Name %in% c("Allan", "Alan", "Allen"),
+         Sex == "M"
+         ) |>
+  select(Name, State, Count) |>
+  group_by(Name)|>
+  pivot_wider(names_from = Name,
+              values_from = Count)|>
+  knitr::kable(format = "html",
+               col.names =
+                 c("State", "Alan", "Allen", "Allan"),
+               caption = "Number of Male Babies Born in 2000 by Name and State"
+               ) |>
+  kableExtra::kable_classic(html_font = "Optima") |>
+  kable_styling(bootstrap_options = "striped", font_size = 14)
 ```
 
--   Example 2
+-   Example 2: Challenge 9 Question 1
 
 ```{r dvs-7-2}
-
+names |>
+  rename("Sex" = "Gender") |>
+  filter(Name == "Allison") |>
+  select(State, Sex, Count) |>
+  group_by(State, Sex) |>
+  summarize(
+    Count = sum(Count)
+  ) |>
+  pivot_wider(names_from = Sex,
+              values_from = Count) |>
+  mutate(
+    F = if_else(is.na(F), 0, F),
+    M = if_else(is.na(M), 0, M)
+  ) |>
+  knitr::kable(format = "html",
+               col.names =
+                 c("State", "Female", "Male"),
+               caption = "Number of Babies Born with the Name Allison By Sex and State"
+               ) |>
+  kableExtra::kable_classic(html_font = "Optima") |>
+  kable_styling(bootstrap_options = "striped", font_size = 14)
 ```
 
 ## Program Efficiency
@@ -576,22 +727,70 @@ white_nonwhite <- new_hiphop |>
 
 -   `map()` functions
 
-```{r pe-1-map-1}
+Lab 8
 
+```{r pe-1-map-1}
+song <- map_chr(.x = 1:12,
+                .f = ~sing_day(dataset = xmas2, num = .x, phrase_col = Full.Phrase))
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
 
--   Example 1
+-   Example 1: Lab 8 (Phrase Function)
 
 ```{r pe2-1}
+make_phrase <- function(day, num_word, item, verb, adjective, location) {
+  
+  day <- str_replace_na(day, "")
+  num_word <- str_replace_na(num_word, "")
+  item <- str_replace_na(item, "")
+  verb <- str_replace_na(verb, "")
+  adjective <- str_replace_na(adjective, "")
+  location <- str_replace_na(location, "")
+  
+ item <-
+   case_when(
+    day > 1 ~ pluralize_gift(item),
+    TRUE ~ item)
+ 
+ article <-
+   case_when(
+     day == 1 & str_detect(item, "^[aeiou]") ~ "an",
+     day == 1 ~ "a",
+     TRUE ~ ""
+  )
+  
+ num_word <- case_when(day == 1 ~ "",
+                       TRUE ~ num_word
+                       
+   )
+ 
 
+  phrase <- glue("{article} {num_word} {adjective} {item} {verb} {location}")
+  return(phrase)
+}
 ```
 
--   Example 2
+-   Example 2: Lab 8 (Sing-Day Function)
 
 ```{r pe2-2}
+sing_day <- function(dataset, num, phrase_col) {
+  
+  # Step 1: Setup the intro line
+  # Hint: You need to convert a number (e.g., 1) to a word (e.g., first)
+  num_word <- ordinal(num)
+  
+  intro <- glue::glue("On the {num_word} day of Christmas, my true love gave to me:")
+  
+  # Step 2: Sing the gift phrases
 
+    phrases <- dataset |>
+      pull( {{phrase_col}} ) 
+    
+    lyrics <- str_flatten(phrases[num:1])
+    
+    return(glue::glue("{intro} {lyrics}"))
+}
 ```
 
 **PE-3:I can use iteration to reduce repetition in my code.**
@@ -609,13 +808,29 @@ white_nonwhite <- new_hiphop |>
     ))
 ```
 
--   `map()` functions (Provide 2 Examples)
+-   `map()` functions (Provide 2 Examples): Lab 8 (Testing the Function)
 
 ```{r pe-3-map-1}
+xmas2 <- xmas %>%
+  mutate(day.num = as.character(english::english(Day)),
+         
+         Full.Phrase = pmap_chr(.l = list(
+           day = Day,
+           num_word = day.num,
+           item = Gift.Item,
+           verb = Verb,
+           adjective = Adjective,
+           location = Location),
+        .f = make_phrase))
 
+print(str_squish(xmas2$Full.Phrase))
 ```
 
+Lab 8
+
 ```{r pe-3-map-2}
+song <- map_chr(.x = 1:12,
+                .f = ~sing_day(dataset = xmas2, num = .x, phrase_col = Full.Phrase))
 
 ```
 
@@ -674,10 +889,22 @@ hiphop_clean |>
 
 **DSM-2: I can fit a linear regression and extract necessary summary measures.**
 
--   Example 1
+-   Example 1: Lab 9 Question 4
 
 ```{r dsm-2-1}
-
+allison_f |>
+  group_by(Year) |>
+  summarize(
+    Count = sum(Count)
+  ) |>
+  ggplot(mapping = aes(x = Year, y = Count)) +
+  geom_point(color = "darkblue") +
+  geom_smooth(method = "lm", fill = "lightblue", color = "aquamarine4") +
+  scale_x_continuous(breaks = c("1997":"2014"), 
+                     guide = guide_axis(n.dodge = 2)) +
+  scale_y_continuous(n.breaks = 8) +
+  labs(x = "Year", y = "Count", title = "Number of Babies Named Allison from 1997 to 2014") +
+  theme(text = element_text(family = "Optima"))
 ```
 
 -   Example 2
