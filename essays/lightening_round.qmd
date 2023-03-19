@@ -3,3 +3,13 @@ title: "Lightening Round Essays"
 format: html
 editor: visual
 ---
+
+If Eva Dykaar doesn’t earn an A, then nobody should, because she was incredibly helpful with providing me and other students with clear explanations and feedback when I was confused as well as conducted external research to make her visualizations clear and tidy.
+
+The most difficult part of the class for me was learning how to write functions as it was hard to visualize what the function was doing without seeing the output. 
+
+The easiest part of the class was learning how to create visualizations in ggplot since it was very repetitive and it allowed us to use our creativity to make the graphs pretty with different colors, fonts, and formatting.
+
+The part of the class that interested me the most was learning about piping datasets and applying different functions to them because it was completely different from what I previously learned with python, and made it easier to understand what the code was doing.
+
+One piece of advice I would give to a student starting STAT 331 would be to always do revisions on your labs and challenges, even if you get a complete because the repetition of writing code makes you learn it and you can figure out new ways to write tidy and efficient code.
