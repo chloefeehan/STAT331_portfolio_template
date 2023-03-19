@@ -1,0 +1,216 @@
+---
+title: "Lab 4"
+author: "Chloe Feehan"
+format:
+  html: 
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(here)
+
+avocados <- read_csv(here("Labs", "Lab 4", "avocado.csv"))
+```
+
+## Question 1
+
+The data is collected from the Hass Avocado Board website in May of 2018. The data is collected from the retailer's cash registers and is based on the number of retail sales of Hass avocados. The data set includes the average avocado price by region and year. It provides information about the total number of bags and bag size as well as the volume of avocados sold depending on the size of the avocado. It also takes into account the type of avocado, if it is conventional or organic.
+
+## Question 2
+
+```{r}
+#tibble of major regions
+regions_major <- tibble(region = c("West",
+                             "GreatLakes",
+                             "Midsouth",
+                             "Northeast",
+                             "Southeast",
+                             "SouthCentral",
+                             "WestTexNewMexico",
+                             "Plains"
+                             ))
+
+#tibble of minor regions
+regions_minor <- tibble(region = c("California",
+                                   "NorthernNewEngland",
+                                   "NewYork",
+                                   "SouthCarolina",
+                                   "TotalUS"
+                          ))
+
+
+#clean the data set
+avocados_clean <- 
+  anti_join(avocados, regions_major, by = "region") |>
+  anti_join(regions_minor, by = "region") |>
+  rename("Small" = "4046", 
+         "Large" = "4225", 
+         "XLarge" = "4770", 
+         "TotalVolume" = "Total Volume") 
+
+#data set including only the major regions
+avocados_major <- 
+  semi_join(avocados, regions_major, by = "region") |>
+  rename("Small" = "4046", 
+         "Large" = "4225", 
+         "XLarge" = "4770") 
+
+
+```
+
+## Question 3: Which major region sold the most organic, small Hass avocados in 2017?
+
+```{r}
+avocados_major |>
+  filter(
+    type == "organic" &
+    year == 2017
+  ) |>
+  group_by(region) |>
+  summarize(
+    total = sum(Small)
+  )|>
+  slice_max(total) |>
+  pull(region)
+  
+```
+
+The region that sold the most organic, small Hass avocados in 2017 was West.
+
+## Question 4: Use the separate() function to split the Date variable into year, month, and day. In which month is the highest volume of avocado sales?
+
+```{r}
+separate(data = avocados_clean, 
+         col = Date, 
+         into = c("Year", "Month", "Day"), 
+         sep = "-") |>
+  slice_max(TotalVolume) |>
+  select(Month)
+
+```
+
+The month that has the highest volume of avocado sales is February.
+
+## Question 5: Which metro area regions sold the most total avocados? Plot side-by-side boxplots of total volume for only the five regions with the highest averages for the Total Volume variable.
+
+```{r}
+# https://www.geeksforgeeks.org/how-to-prevent-scientific-notation-in-r/
+options(scipen = 999)
+
+metro <- avocados_clean |>
+  group_by(region) |>
+  summarize(mean_vol =
+    mean(TotalVolume) 
+  ) |>
+  slice_max(mean_vol, n = 5) 
+
+avocados_metro <- 
+  semi_join(avocados_clean, metro, by = "region")
+
+ggplot(data = avocados_metro, mapping = aes(x = TotalVolume, 
+                                            y = region)) +
+        geom_boxplot(fill = "lightblue") +
+  labs(x = "Total Volume of Avocados", y = "Region", 
+       title = "Total Volume of Avocados by Region")
+       
+```
+
+The regions that sold the most avocados on average were Los Angeles, Plains, Dallas-Fortworth, Houston, and Phoenix/Tucson.
+
+## Question 6: In which regions is the price of organic versus conventional avocados most different? Support your answer with a few summary statistics and a visualization.
+
+```{r}
+ca_cities <- tibble(region = c("LosAngeles", 
+                               "Sacramento", 
+                               "SanDiego", 
+                               "SanFrancisco"
+  ))
+
+ca_avocados <- 
+  semi_join(avocados_clean, ca_cities, by = "region") |>
+  group_by(region, type) |>
+  summarize(
+    price = mean(AveragePrice)
+  ) |>
+  pivot_wider(names_from = type, 
+              values_from = price) |>
+  mutate(
+    difference = organic - conventional
+  ) 
+
+ca_avocados
+
+ggplot(data = ca_avocados, mapping = aes(x = difference, y = region)) +
+  geom_segment(aes(xend = 0, yend = region)) +
+  geom_point(color = "forestgreen") +
+  labs(x = "Region", 
+       y = "Difference in Price between Organic vs. Conventional Avocados ($)", 
+       title = "Difference in Price between Organic vs. Conventional Avocados by Region")
+
+```
+
+The region that had the greatest price difference was San Francisco with a .8141 difference.
+
+## Queston 7: The following plot shows, for all four California regions, the proportion of the mean Hass avocado sales that are small, large, or extra large; conventional vs. organic. Recreate the plot.
+
+```{r}
+california_regions <- tibble(region = c("LosAngeles", 
+                                      "Sacramento", 
+                                      "SanDiego", 
+                                      "SanFrancisco"))
+
+ca_plot <-
+  semi_join(avocados_clean, california_regions,
+           by = "region") |>
+  pivot_longer("Small":"XLarge", 
+               names_to = "avo_size", 
+               values_to = "volume") |>
+  group_by(region, avo_size, type) |>
+   summarize(
+     avg_size = mean(volume))|>
+  group_by(region, type) |>
+  mutate(
+    total = sum(avg_size)
+  ) |>
+    mutate(
+      proportion = (avg_size/total)
+  ) 
+
+ggplot(data = ca_plot, mapping = aes(x = region, y = proportion, 
+                                     fill = factor(avo_size, 
+                                                   levels = c("Small", "Large", "XLarge")))) +
+  facet_wrap(~type) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#a6cee3" , "#1f78b4", "#b2df8a")
+  ) +
+  labs(x = "Region of CA", y = "Proportion of Mean Avocadods Sold", 
+        title = "Proportion of Avocados by Size and California City",
+        fill = "Avocado Size") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#Sources: 
+#https://stackoverflow.com/questions/32345923/how-to-control-ordering-of-stacked-bar-chart-using-identity-on-ggplot2
+# https://ggplot2.tidyverse.org/reference/scale_manual.html
+# https://ggplot2.tidyverse.org/reference/guide_axis.html
+```
+
+
+## Revisions
+For question 1, I wasn't very specific on where the data came from and what it represented, so I added more detail in order to better understand this data.
+
+For question 2, I added "Plains" to the list of regions. I orginally had thought this was a city because when I looked it up, a city called Plains, Georgia came up and they produce a lot of avocados. However, I later realized that it is actually a region. In order to make the code even more efficient, I connected all of the anti_joins together and put all of the items I needed to rename into one rename() function. At first, I was getting a lot of errors when putting them all in one function, but once I played around with it a little, I was able to figure it out.
+
+For question 5, since I added "Plains" to the list of regions, it was now removed from the top five regions, and Denver was added. I had originally used a filter function to filter the top 5 regions, however it is more efficient to use a semi_join instead of retyping all of the region names. This makes the code easier to read and is faster.
+
+For question 6, I originally used a filtering join to filter out the california cities. However, a more efficient way would be using a semi_join to join two data sets together. This produces less lines of codes and makes it easier for the reader to see as well. In order to do this, I created a tibble with the california cities and then used a semi_join to join it with the avocados_clean set. I then printed the ca_avocados dataset so that it is easier to read, rather than the summary of the data. I also had previously used a bar plot to display this data, however barplots are typically for categorical data. Instead of using a bar plot, I changed it to geom_point in order to better represent the data.
+
+
+

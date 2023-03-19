@@ -1,0 +1,128 @@
+---
+title: "Lab 8"
+author: "Chloe Feehan"
+format:
+  html: 
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{r}
+#| include: false
+library(dplyr)
+library(glue)
+library(stringr)
+library(purrr)
+library(english)
+```
+
+```{r}
+xmas <- read.csv("https://www.dropbox.com/s/e584pryn8evm1gz/xmas.csv?dl=1")
+```
+
+```{r pluralize-function}
+pluralize_gift <- function(gift){
+
+gift <- 
+  case_when(
+    str_detect(gift, "oo") ~ str_replace(gift, "oo", "ee"),
+    str_detect(gift, "y$") ~ str_replace(gift, "y$", "ies"),
+    TRUE ~ str_c(gift, "s", sep = "")
+  )
+
+return(gift)
+
+}
+```
+
+```{r phrase-function}
+make_phrase <- function(day, num_word, item, verb, adjective, location) {
+  
+  day <- str_replace_na(day, "")
+  num_word <- str_replace_na(num_word, "")
+  item <- str_replace_na(item, "")
+  verb <- str_replace_na(verb, "")
+  adjective <- str_replace_na(adjective, "")
+  location <- str_replace_na(location, "")
+  
+ item <-
+   case_when(
+    day > 1 ~ pluralize_gift(item),
+    TRUE ~ item)
+ 
+ article <-
+   case_when(
+     day == 1 & str_detect(item, "^[aeiou]") ~ "an",
+     day == 1 ~ "a",
+     TRUE ~ ""
+  )
+  
+ num_word <- case_when(day == 1 ~ "",
+                       TRUE ~ num_word
+                       
+   )
+ 
+
+  phrase <- glue("{article} {num_word} {adjective} {item} {verb} {location}")
+  return(phrase)
+}
+```
+
+```{r testing the function}
+xmas2 <- xmas %>%
+  mutate(day.num = as.character(english::english(Day)),
+         
+         Full.Phrase = pmap_chr(.l = list(
+           day = Day,
+           num_word = day.num,
+           item = Gift.Item,
+           verb = Verb,
+           adjective = Adjective,
+           location = Location),
+        .f = make_phrase))
+
+print(str_squish(xmas2$Full.Phrase))
+```
+
+
+
+```{r sing_day-function}
+sing_day <- function(dataset, num, phrase_col) {
+  
+  # Step 1: Setup the intro line
+  # Hint: You need to convert a number (e.g., 1) to a word (e.g., first)
+  num_word <- ordinal(num)
+  
+  intro <- glue::glue("On the {num_word} day of Christmas, my true love gave to me:")
+  
+  # Step 2: Sing the gift phrases
+
+    phrases <- dataset |>
+      pull( {{phrase_col}} ) 
+    
+    lyrics <- str_flatten(phrases[num:1])
+    
+    return(glue::glue("{intro} {lyrics}"))
+}
+
+xmas2 |>
+sing_day(num = 2, phrase_col = Full.Phrase)
+
+
+```
+
+```{r}
+
+song <- map_chr(.x = 1:12,
+                .f = ~sing_day(dataset = xmas2, num = .x, phrase_col = Full.Phrase))
+
+str_squish(song)
+
+```
+

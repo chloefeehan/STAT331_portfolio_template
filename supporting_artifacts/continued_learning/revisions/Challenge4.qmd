@@ -1,0 +1,65 @@
+---
+title: "Challenge 4"
+author: "Chloe Feehan"
+format:
+  html: 
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(here)
+
+avocados <- read_csv(here("Labs", "Lab 4", "avocado.csv"))
+housing <- read_csv(here("Labs", "Lab 4", "housing.csv"))
+
+#data from:
+# http://www.laalmanac.com/economy/ec37.php
+# https://www.newhomesdirectory.com/California/Sacramento/historical-housing-report
+#https://fortune.com/2016/04/15/san-francisco-housing-prices-drop/
+```
+```{r}
+
+avocados_clean <- avocados |>
+  filter(region == c("LosAngeles", 
+                     "Sacramento", 
+                     "SanDiego", 
+                     "SanFrancisco"))
+
+avocados_clean <- avocados_clean |>
+  rename("Small" = "4046") |>
+  rename("Large" = "4225") |>
+  rename("XLarge" = "4770") |>
+  rename("TotalVolume" = "Total Volume") 
+
+
+avocados_avg <- avocados_clean |>
+  group_by(region, year) |>
+  summarize(
+    avg_price = mean(AveragePrice)
+  ) 
+
+new_avocados <- 
+  full_join(avocados_avg, housing, by = c("region", "year")) 
+  
+ggplot(data = new_avocados, mapping = aes(x = price, y = avg_price, 
+                                          color = year)
+       ) +
+  geom_point() +
+  facet_wrap(~region) +
+  guides(color = guide_legend("Year")) +
+  labs(x = "Housing Price ($)", y = "Yearly Average Price of Avocados ($)",
+       title = "California Housing Prices and Yearly Average Price of Avocados by City")
+```
+
+This graph displays the average housing price versus the average avocado price per year in each California region (San Diego, San Francisco, Los Angeles, and Sacramento). It shows that on average, the higher the housing price, the higher the prices of avocados tend to be. This shows that if millennials live in a higher priced area, they will be spending more money on avocados, resulting in saving less money for potentially purchasing a house in the area.
+
+
+

@@ -1,0 +1,131 @@
+---
+title: "Lab 7"
+author: "Chloe Feehan"
+format:
+  html: 
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+## 1. Data
+```{r}
+library(tidyverse)
+library(here)
+
+fish <- read_csv(here("Labs", "Lab 7", "BlackfootFish.csv"))
+```
+
+
+## 2. Part One: Summaries and Plots
+
+### 2.1 Summarizing Missing Data
+
+What variable(s) have missing values present? What variable(s) have missing values present?
+```{r}
+
+fish |>
+  summarize(
+    across(.cols = c(trip:species),
+           .fns = ~sum(is.na(.x)))
+  )
+
+```
+The variable that has missing values present is weight. There are 1796 missing values.
+
+
+### 2.2 Visualizing Missing Data
+```{r}
+
+fish |>
+  filter(
+    is.na(weight)
+  ) |>
+  
+ggplot(mapping = aes(x = as.factor(year), fill = section)) +
+  facet_grid(~trip, labeller = label_both) +
+  geom_bar() +
+  scale_fill_manual(values = c("darkmagenta", "deepskyblue3")) +
+  labs(x = "Year", y = "Frequency", 
+       title = "Frequency of Missing Fish Weight Values by Year, Section, and Trip", 
+       fill = "Section") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme(text = element_text(family = "Optima"))
+
+#https://r-graphics.org/recipe-facet-label-text
+```
+
+```{r}
+rescale_01 <- function(var) {
+  stopifnot(is.numeric(var),
+            length(var) > 1)
+  
+  rng = range(var, na.rm = TRUE)
+  
+  num <- var - rng[1]
+  denom <- rng[2] - rng[1]
+  
+  num / denom
+}
+
+#rescale_01(fish$length)
+#rescale_01(fish$weight)
+```
+### 3.3 First, test your function on the simple vector below. Add code that verifies the maximum of your rescaled vector is 1 and the minimum is 0!
+
+```{r}
+x <- c(1:85, NA)
+
+x1 <- rescale_01(x)
+range(x1, na.rm = TRUE)
+
+```
+### 3.4 Performing a More Difficult Test
+```{r}
+#| layout-nrow: 2
+ggplot(data = fish, mapping = aes(x = length)) +
+  geom_histogram(fill = "darkseagreen4") +
+  labs(y = "Frequency", x = "Fish Length", title = "Fish Length by Frequency") +
+  theme(text = element_text(family = "Optima"))
+
+ggplot(data = fish, mapping = aes(x = rescale_01(length))) +
+  geom_histogram(fill = "cyan4") +
+  labs(y = "Frequency", x = "Fish Length Rescaled", title = "Fish Length Rescaled by Frequency") +
+  theme(text = element_text(family = "Optima"))
+```
+
+
+
+### 3.5 Incorporating Variables
+
+```{r}
+rescale_column <- function(data, column) {
+  data <- data |>
+    mutate(across(.col = {{ column }},
+                  .fns = ~rescale_01(.x))
+           )
+  data
+}
+```
+
+## 3.6 Another Function Test
+
+```{r}
+rescale_column(fish, c(length, weight))
+```
+
+
+
+## Revision
+
+For Part 2 Question 2, I originally included two stopifnot functions inside of the function that I created. However, that is an example of inefficient code. To make it more efficient, I used a comma inside the function in order to apply both conditions inside the same function.
+
+For Part 2 Question 1, I had used the {{}} operator to pull out var from the function. However, this is not necessary to do since you don't need to use it for vector functions. So, to revise my code, I removed all areas in the function where it used {{}}.
+
+For Part 2 Question 4, I rotated the orientation of the histogram as it was plotted on the opposite axis.
+
